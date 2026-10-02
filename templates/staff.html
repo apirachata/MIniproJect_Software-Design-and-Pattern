@@ -1,0 +1,155 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Menu - ระบบจัดการพนักงาน</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <style>
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .admin-table th, .admin-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #94a3b8;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.2);
+            color: white;
+            font-family: inherit;
+        }
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+        .btn-danger:hover {
+            background: #ef4444;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-blob"></div>
+    <div class="background-blob blob-2"></div>
+    
+    <header class="glass-header">
+        <div class="header-content">
+            <h1>ระบบหลังร้าน (Staff) 👨‍🍳</h1>
+            <a href="/staff_logout/" class="table-badge" style="text-decoration: none; color: white; background: #ef4444; border: none;">ออกจากระบบ</a>
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <!-- ออเดอร์ลูกค้า -->
+        <div class="glass-card" style="padding: 2rem; margin-bottom: 2rem;">
+            <h2 style="color: #60a5fa; margin-bottom: 1rem;">📝 ออเดอร์ที่ลูกค้าสั่ง (Real-time)</h2>
+            {% if orders %}
+            <div style="overflow-x: auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>โต๊ะที่สั่ง</th>
+                            <th>รายการอาหาร (อ้างอิงจาก Extrinsic State)</th>
+                            <th>ยอดรวม (บาท)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td style="font-size: 1.2rem; font-weight: bold; color: #f8fafc;">{{ order.table }}</td>
+                            <td style="color: #cbd5e1;">{{ order.item_names|join:", " }}</td>
+                            <td style="color: #10b981; font-weight: bold; font-size: 1.1rem;">฿{{ order.total_price }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p style="color: #94a3b8; text-align: center; padding: 2rem 0;">ยังไม่มีออเดอร์ในขณะนี้ (ลูกค้ายังไม่กดสั่ง)</p>
+            {% endif %}
+        </div>
+
+        <!-- จัดการเมนูอาหาร CRUD -->
+        <div class="glass-card" style="padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                <h2 style="color: #a78bfa; margin: 0;">🍔 จัดการเมนูอาหาร (CRUD / Intrinsic State)</h2>
+                <form action="/staff/" method="POST" style="margin: 0;">
+                    <input type="hidden" name="action" value="reset">
+                    <button type="submit" class="order-btn" style="background: #f59e0b; width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;">🔄 คืนค่าเมนูเริ่มต้น</button>
+                </form>
+            </div>
+            
+            <form action="/staff/" method="POST" style="margin-bottom: 2rem; background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                <input type="hidden" name="action" value="add">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div class="form-group">
+                        <label>ชื่อเมนูอาหาร</label>
+                        <input type="text" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>ราคา (บาท)</label>
+                        <input type="number" name="price" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>รายละเอียด</label>
+                    <input type="text" name="description" required>
+                </div>
+                <div class="form-group">
+                    <label>ลิงก์รูปภาพ (Image URL)</label>
+                    <input type="text" name="image_url" placeholder="https://..." required>
+                </div>
+                <button type="submit" class="order-btn" style="background: #10b981; width: auto; padding: 0.8rem 2rem;">+ เพิ่มเมนูใหม่</button>
+            </form>
+
+            <div style="overflow-x: auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>รูปภาพ</th>
+                            <th>ชื่อเมนู</th>
+                            <th>ราคา</th>
+                            <th>การจัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in menus %}
+                        <tr>
+                            <td><img src="{{ item.image_url }}" width="60" height="60" style="border-radius: 8px; object-fit: cover;"></td>
+                            <td style="font-weight: 500;">{{ item.name }}</td>
+                            <td style="color: #10b981;">฿{{ item.price }}</td>
+                            <td>
+                                <form action="/staff/" method="POST" style="display: inline;">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="name" value="{{ item.name }}">
+                                    <button type="submit" class="order-btn btn-danger" style="padding: 0.4rem 1rem; font-size: 0.9rem; width: auto;">ลบ</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

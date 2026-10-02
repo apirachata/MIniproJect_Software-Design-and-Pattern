@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Menu - โต๊ะ {{ table }}</title>
+    <!-- Google Fonts for modern typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+    <div class="background-blob"></div>
+    <div class="background-blob blob-2"></div>
+    
+    <header class="glass-header">
+        <div class="header-content">
+            <h1>Smart Menu ✨</h1>
+            <div class="table-badge">โต๊ะ {{ table }}</div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Flyweight Testing Dashboard -->
+        <div class="dashboard glass-card" style="margin-bottom: 2rem; padding: 2rem;">
+            <h2 style="margin-bottom: 1rem; color: #a78bfa;">🚀 แผงทดสอบประสิทธิภาพ Flyweight Pattern</h2>
+            <form action="/" method="GET" style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                <label>จำลองจำนวนลูกค้าที่เปิดเมนูพร้อมกัน:</label>
+                <input type="number" name="users" value="{{ users }}" style="padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white; width: 120px; font-family: inherit;">
+                <input type="hidden" name="table" value="{{ table }}">
+                <button type="submit" class="order-btn" style="width: auto; padding: 0.6rem 1.5rem;">รันจำลองระบบ</button>
+            </form>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div style="background: rgba(239, 68, 68, 0.1); padding: 1.2rem; border-radius: 12px; border-left: 4px solid #ef4444;">
+                    <p style="font-size: 0.9rem; color: #cbd5e1; margin-bottom: 0.5rem;">ถ้าไม่ใช้ Flyweight (สร้างใหม่ทุกคน)</p>
+                    <h3 style="font-size: 1.6rem;">{{ objects_without_flyweight }} Object</h3>
+                    <p style="color: #ef4444; font-weight: 500; margin-top: 0.5rem;">กิน RAM: {{ memory_without_flyweight }} MB</p>
+                </div>
+                <div style="background: rgba(16, 185, 129, 0.1); padding: 1.2rem; border-radius: 12px; border-left: 4px solid #10b981;">
+                    <p style="font-size: 0.9rem; color: #cbd5e1; margin-bottom: 0.5rem;">เมื่อใช้ Flyweight (แชร์ข้อมูลกัน)</p>
+                    <h3 style="font-size: 1.6rem;">{{ objects_created }} Object</h3>
+                    <p style="color: #10b981; font-weight: 500; margin-top: 0.5rem;">กิน RAM: {{ memory_used_flyweight }} MB</p>
+                </div>
+                <div style="background: rgba(167, 139, 250, 0.1); padding: 1.2rem; border-radius: 12px; border-left: 4px solid #a78bfa;">
+                    <p style="font-size: 0.9rem; color: #cbd5e1; margin-bottom: 0.5rem;">สรุปประหยัดทรัพยากรไปได้</p>
+                    <h3 style="font-size: 1.6rem; color: #a78bfa;">{{ memory_saved }} MB</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="menu-grid">
+            {% for item in items %}
+            <div class="menu-card glass-card">
+                <div class="image-container">
+                    <img src="{{ item.image_url }}" alt="{{ item.name }}" loading="lazy">
+                    <div class="price-tag">฿{{ item.price }}</div>
+                </div>
+                <div class="card-content">
+                    <h2>{{ item.name }}</h2>
+                    <p>{{ item.description }}</p>
+                    <button class="order-btn" onclick="placeOrder('{{ item.name }}', '{{ table }}')">สั่งอาหาร</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <script>
+        // Simple animation on scroll
+        const cards = document.querySelectorAll('.menu-card');
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        });
+
+        cards.forEach((card, index) => {
+            card.style.opacity = 0;
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = `all 0.5s ease ${index * 0.1}s`;
+            observer.observe(card);
+        });
+        // ระบบรับออเดอร์อาหาร
+        function placeOrder(itemName, tableNum) {
+            const formData = new FormData();
+            formData.append('item_name', itemName);
+            formData.append('table', tableNum);
+
+            fetch('/order/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(`✅ ${data.message}\nยอดรวมของโต๊ะ ${data.table} ตอนนี้คือ ${data.total_price} บาท (${data.total_items} รายการ)`);
+                } else {
+                    alert('❌ เกิดข้อผิดพลาด!');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('ระบบขัดข้อง');
+            });
+        }
+    </script>
+</body>
+</html>
